@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Build Wall · Claude Code board</title>
+<style>
+  :root{
+    /* Claude brand: Ivory canvas, Slate ink, Clay accent, warm tints for the cards */
+    --canvas:#F0EEE6; --card:#FAF9F5; --ink:#141413; --muted:#5E5D59; --line:#E3DFD3;
+    --accent:#D97757; --accent-ink:#FAF9F5; --accent-soft:#F6E3D7;
+    --tint-clay:#F5DCCB; --tint-oat:#EAE3D1; --tint-sage:#DCE5D6; --tint-sky:#D8E2EC; --tint-sand:#F2E5C4;
+    --radius:24px; --shadow:0 12px 34px rgba(20,20,19,.09);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--canvas);color:var(--ink);font:16px/1.4 -apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  body{display:flex;flex-direction:column;overflow:hidden}
+  header{display:flex;align-items:center;gap:18px;padding:20px 28px 10px}
+  .brand .eyebrow{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .brand h1{margin:2px 0 0;font-size:34px;letter-spacing:-.02em;font-weight:800;line-height:1.05}
+  .brand h1 span{color:var(--accent)}
+  .stats{display:flex;gap:12px;margin-left:auto}
+  .stat{background:var(--card);border-radius:18px;padding:10px 18px;box-shadow:0 2px 12px rgba(20,20,19,.05);text-align:center;min-width:110px}
+  .stat b{display:block;font-size:30px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;transition:transform .2s}
+  .stat b.bump{transform:scale(1.2);color:var(--accent)}
+  .stat small{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+  .qr{background:var(--card);border-radius:20px;padding:10px 14px 10px 10px;box-shadow:0 2px 12px rgba(20,20,19,.05);display:flex;align-items:center;gap:12px;cursor:pointer;transition:transform .3s}
+  .qr:hover{transform:scale(1.03)}
+  .qr .code{width:84px;height:84px;display:grid;place-items:center}
+  .qr .code canvas,.qr .code img{width:84px!important;height:84px!important}
+  .qr .code table{transform:scale(.3);transform-origin:top left}
+  .qr .txt{font-size:13px;color:var(--muted);line-height:1.3;max-width:150px}
+  .qr .txt b{display:block;color:var(--ink);font-size:14px}
+  .qr .txt code{font-size:11px;color:var(--accent);word-break:break-all}
+  main{flex:1;position:relative;overflow:hidden;padding:8px 28px 28px}
+  /* The 15 newest ideas, 5 across and 3 down, sized to fill the screen */
+  .wall{display:grid;gap:20px;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));height:100%}
+  @media (max-aspect-ratio:1/1){.wall{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr))}}
+  .card{background:var(--fill,#fff);border-radius:var(--radius);padding:clamp(14px,1.3vw,26px) clamp(16px,1.4vw,28px) clamp(12px,1.1vw,22px);box-shadow:var(--shadow);position:relative;transform:rotate(var(--rot,0deg));animation:land .6s cubic-bezier(.2,.9,.25,1.25) both;display:flex;flex-direction:column;gap:12px;min-width:0;min-height:0}
+  @keyframes land{0%{transform:scale(.4) rotate(-8deg) translateY(40px);opacity:0}70%{opacity:1}100%{transform:rotate(var(--rot,0deg));opacity:1}}
+  .card .t{flex:1;min-height:0;overflow:hidden;font-size:28px;font-weight:700;line-height:1.2;letter-spacing:-.01em;overflow-wrap:anywhere}
+  .card .who{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:17px;font-weight:700;min-width:0}
+  .card .who i{flex:none;width:30px;height:30px;border-radius:50%;background:rgba(20,20,19,.08);display:grid;place-items:center;font-style:normal;font-size:15px;color:var(--ink)}
+  .card .who span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .card.new::after{content:"NEW";position:absolute;top:-8px;right:14px;background:var(--accent);color:var(--accent-ink);font-size:11px;font-weight:800;letter-spacing:.08em;padding:4px 8px;border-radius:999px;box-shadow:0 4px 12px rgba(217,119,87,.4);animation:tag 8s forwards}
+  .card.new{box-shadow:0 0 0 3px var(--accent),var(--shadow)}
+  @keyframes tag{0%,85%{opacity:1}100%{opacity:0}}
+  .card .hide{position:absolute;top:8px;left:8px;width:26px;height:26px;border-radius:50%;border:0;background:var(--card);color:var(--muted);cursor:pointer;opacity:0;transition:.15s;font-size:16px;line-height:1}
+  body.admin .card:hover .hide{opacity:1}
+  .card .hide:hover{background:#FFE0DC;color:#C0392B}
+  /* Empty state */
+  .empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:20px;transition:opacity .5s}
+  .empty.gone{opacity:0;pointer-events:none}
+  .empty h2{font-size:clamp(30px,4vw,52px);margin:0;letter-spacing:-.02em;font-weight:800;max-width:900px;line-height:1.08}
+  .empty p{margin:0;color:var(--muted);font-size:20px}
+  .empty .bigqr{background:var(--card);padding:22px;border-radius:28px;box-shadow:var(--shadow);animation:float 3.5s ease-in-out infinite}
+  .empty .bigqr .code{width:260px;height:260px}
+  .empty .bigqr .code canvas,.empty .bigqr .code img{width:260px!important;height:260px!important}
+  .empty .url{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--card);padding:10px 18px;border-radius:999px;font-weight:700;color:var(--accent);font-size:18px;box-shadow:0 2px 12px rgba(20,20,19,.05)}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  /* Presenter bar */
+  .bar{position:fixed;right:16px;bottom:16px;display:flex;gap:8px;align-items:center;opacity:.25;transition:opacity .2s}
+  .bar:hover,.bar:focus-within{opacity:1}
+  .bar button,.bar a{font:inherit;font-size:13px;font-weight:700;border:0;border-radius:999px;padding:8px 14px;background:var(--card);color:var(--ink);cursor:pointer;box-shadow:0 2px 12px rgba(20,20,19,.08);text-decoration:none}
+  .bar button.danger{color:#C0392B}
+  .bar .ok{color:#1E9E6A}
+  .modal{position:fixed;inset:0;background:rgba(20,20,19,.45);display:none;place-items:center;z-index:100}
+  .modal.show{display:grid}
+  .modal .box{background:var(--card);border-radius:22px;padding:24px;width:min(420px,92vw);box-shadow:var(--shadow)}
+  .modal h3{margin:0 0 6px;font-size:20px}
+  .modal p{margin:0 0 14px;color:var(--muted);font-size:14px}
+  .modal input{width:100%;font:inherit;font-size:17px;border:2px solid var(--line);border-radius:14px;padding:12px 14px;outline:none}
+  .modal input:focus{border-color:var(--accent)}
+  .modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+  .modal .actions button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 16px;cursor:pointer;background:var(--canvas)}
+  .modal .actions button.primary{background:var(--accent);color:var(--accent-ink)}
+  .modal .actions button.danger{background:#C0392B;color:#fff}
+  .modal .err{color:#C0392B;font-size:13px;min-height:16px;margin-top:8px}
+  .qrmodal .box{width:auto;text-align:center}
+  .qrmodal .code{width:min(60vh,520px);height:min(60vh,520px);margin:0 auto 12px}
+  .qrmodal .code canvas,.qrmodal .code img{width:100%!important;height:100%!important}
+  .qrmodal .url{font-family:ui-monospace,Menlo,monospace;font-weight:700;color:var(--accent);font-size:22px}
+  .spark{display:inline-block;width:var(--spark,26px);height:var(--spark,26px);color:var(--accent);vertical-align:middle;transform-origin:50% 50%;animation:spark-in .9s cubic-bezier(.34,1.56,.64,1) both,spark-idle 7s ease-in-out 1.4s infinite}
+  .spark svg{width:100%;height:100%;display:block}
+  .spark.pop{animation:spark-in .9s cubic-bezier(.34,1.56,.64,1) both}
+  @keyframes spark-in{0%{transform:scale(0)}55%{transform:scale(1.18)}75%{transform:scale(.94) rotate(-3deg)}100%{transform:scale(1) rotate(0)}}
+  @keyframes spark-idle{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.06) rotate(2deg)}}
+  .working{--s:22px;display:inline-block;width:var(--s);height:var(--s);background:currentColor;-webkit-mask:url(../../lib/spark-working.svg) 0 0/var(--s) auto no-repeat;mask:url(../../lib/spark-working.svg) 0 0/var(--s) auto no-repeat;animation:working .93s steps(28) infinite;vertical-align:-4px;margin-right:8px}
+  @keyframes working{to{-webkit-mask-position:0 calc(var(--s) * -28);mask-position:0 calc(var(--s) * -28)}}
+  .clawd{display:inline-block;width:48px;height:32px;image-rendering:pixelated;animation:clawd-bob 1.6s ease-in-out infinite;vertical-align:middle;margin-left:6px}
+  .clawd svg{width:100%;height:100%;display:block;shape-rendering:crispEdges}
+  @keyframes clawd-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+  @media (prefers-reduced-motion:reduce){.spark,.working,.clawd{animation:none}}
+</style>
+</head>
+<body>
+  <header>
+    <i class="spark" id="spark" style="--spark:54px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" >
+  
+  <path fill="#d97757" d="M11.376 24L10.776 23.544L10.44 22.8L10.776 21.312L11.16 19.392L11.472 17.856L11.76 15.96L11.928 15.336L11.904 15.288L11.784 15.312L10.344 17.28L8.16 20.232L6.432 22.056L6.024 22.224L5.304 21.864L5.376 21.192L5.784 20.616L8.16 17.568L9.6 15.672L10.536 14.592L10.512 14.448H10.464L4.128 18.576L3 18.72L2.496 18.264L2.568 17.52L2.808 17.28L4.704 15.96L9.432 13.32L9.504 13.08L9.432 12.96H9.192L8.4 12.912L5.712 12.84L3.384 12.744L1.104 12.624L0.528 12.504L0 11.784L0.048 11.424L0.528 11.112L1.224 11.16L2.736 11.28L5.016 11.424L6.672 11.52L9.12 11.784H9.504L9.552 11.616L9.432 11.52L9.336 11.424L6.96 9.84L4.416 8.16L3.072 7.176L2.352 6.672L1.992 6.216L1.848 5.208L2.496 4.488L3.384 4.56L3.6 4.608L4.488 5.304L6.384 6.768L8.88 8.616L9.24 8.904L9.408 8.808V8.736L9.24 8.472L7.896 6.024L6.456 3.528L5.808 2.496L5.64 1.872C5.576 1.656 5.544 1.416 5.544 1.152L6.288 0.144001L6.696 0L7.704 0.144001L8.112 0.504001L8.736 1.92L9.72 4.152L11.28 7.176L11.736 8.088L11.976 8.904L12.072 9.168H12.24V9.024L12.36 7.296L12.6 5.208L12.84 2.52L12.912 1.752L13.296 0.840001L14.04 0.360001L14.616 0.624001L15.096 1.32L15.024 1.752L14.76 3.6L14.184 6.504L13.824 8.472H14.04L14.28 8.208L15.264 6.912L16.92 4.848L17.64 4.032L18.504 3.12L19.056 2.688H20.088L20.832 3.816L20.496 4.992L19.44 6.336L18.552 7.464L17.28 9.168L16.512 10.536L16.584 10.632H16.752L19.608 10.008L21.168 9.744L22.992 9.432L23.832 9.816L23.928 10.2L23.592 11.016L21.624 11.496L19.32 11.952L15.888 12.768L15.84 12.792L15.888 12.864L17.424 13.008L18.096 13.056H19.728L22.752 13.272L23.544 13.8L24 14.424L23.928 14.928L22.704 15.528L21.072 15.144L17.232 14.232L15.936 13.92H15.744V14.016L16.848 15.096L18.84 16.896L21.36 19.224L21.48 19.8L21.168 20.28L20.832 20.232L18.624 18.552L17.76 17.808L15.84 16.2H15.72V16.368L16.152 17.016L18.504 20.544L18.624 21.624L18.456 21.96L17.832 22.176L17.184 22.056L15.792 20.136L14.376 17.952L13.224 16.008L13.104 16.104L12.408 23.352L12.096 23.712L11.376 24Z"/>
+</svg></i>
+    <div class="brand">
+      <div class="eyebrow">Working with Claude · Afternoon session · 13:00</div>
+      <h1>What will you build with <span>Claude Code</span> today?<i class="clawd" title="Clawd"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 8"  shape-rendering="crispEdges">
+  
+  <g fill="#d97757">
+    <rect x="0" y="2" width="2.06" height="2"/><rect x="9.94" y="2" width="2.06" height="2"/>   
+    <rect x="2" y="0" width="8" height="6.04"/>                                                
+    <rect x="2" y="6" width="1" height="2"/><rect x="4" y="6" width="1" height="2"/><rect x="7" y="6" width="1" height="2"/><rect x="9" y="6" width="1" height="2"/>   
+  </g>
+  <rect x="3" y="1" width="1" height="1" fill="#141413"/><rect x="8" y="1" width="1" height="1" fill="#141413"/>   
+</svg></i></h1>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="people">0</b><small>people</small></div>
+      <div class="stat"><b id="count">0</b><small>ideas</small></div>
+    </div>
+    <div class="qr" id="qrSmall" title="Click to enlarge">
+      <div class="code" id="qr1"></div>
+      <div class="txt"><b>Scan to add yours</b><code id="url1"></code></div>
+    </div>
+  </header>
+  <main>
+    <div class="empty" id="empty">
+      <h2>Scan the code and tell us what you're going to build today</h2>
+      <div class="bigqr"><div class="code" id="qr2"></div></div>
+      <div class="url" id="url2"></div>
+      <p>Your idea lands on this wall the moment you press add.</p>
+    </div>
+    <div class="wall" id="wall"></div>
+  </main>
+
+  <div class="bar" id="bar">
+    <span id="who" class="ok"></span>
+    <button id="btnKey" type="button">Presenter</button>
+    <a id="btnCsv" href="#" style="display:none">Export CSV</a>
+    <button id="btnReset" class="danger" type="button" style="display:none">Reset wall</button>
+    <button id="btnFull" type="button">Fullscreen</button>
+  </div>
+
+  <div class="modal" id="keyModal"><div class="box">
+    <h3>Presenter key</h3><p>Unlocks hiding cards, CSV export and reset. Kept for this tab only.</p>
+    <input id="keyInput" type="password" placeholder="Admin key" autocomplete="off">
+    <div class="err" id="keyErr"></div>
+    <div class="actions"><button type="button" id="keyCancel">Cancel</button><button type="button" class="primary" id="keyOk">Unlock</button></div>
+  </div></div>
+  <div class="modal" id="resetModal"><div class="box">
+    <h3>Clear the wall?</h3><p>Every card for this session goes away (kept in the export). Type <b>clear</b> to confirm.</p>
+    <input id="resetInput" placeholder="clear" autocomplete="off">
+    <div class="actions"><button type="button" id="resetCancel">Cancel</button><button type="button" class="danger" id="resetOk">Clear the wall</button></div>
+  </div></div>
+  <div class="modal qrmodal" id="qrModal"><div class="box"><div class="code" id="qr3"></div><div class="url" id="url3"></div></div></div>
+
+<script src="../../lib/qrcode.min.js"></script>
+<script src="../../config.js"></script>
+<script src="../../lib/api.js"></script>
+<script>
+(() => {
+  const KEY = 'code';
+  const BW = window.BuildWall;
+  const $ = (id) => document.getElementById(id);
+  const joinUrl = new URL('../../join/' + KEY + '/', location.href).href;
+  const shortUrl = joinUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  ['url1', 'url2', 'url3'].forEach((id) => { $(id).textContent = shortUrl; });
+  const mkQr = (id, size) => { try { new QRCode($(id), { text: joinUrl, width: size, height: size, colorDark: '#141413', colorLight: '#FAF9F5', correctLevel: QRCode.CorrectLevel.M }); } catch (e) { $(id).textContent = joinUrl; } };
+  mkQr('qr1', 84); mkQr('qr2', 260); mkQr('qr3', 520);
+
+  const fills = ['var(--tint-clay)', 'var(--tint-oat)', 'var(--tint-sage)', 'var(--tint-sand)', 'var(--tint-sky)'];
+  const MAX_CARDS = 15;
+  const seen = new Map(); // id -> element
+  let admin = false, key = null;
+  try { key = sessionStorage.getItem('bw-admin-key'); } catch {}
+
+  function hashCode(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
+  function card(a, isNew) {
+    const c = document.createElement('article'); c.className = 'card' + (isNew ? ' new' : '');
+    const h = hashCode(a.id);
+    c.style.setProperty('--fill', fills[h % fills.length]);
+    c.style.setProperty('--rot', ((h % 5) - 2) * 0.6 + 'deg');
+    const t = document.createElement('div'); t.className = 't'; t.textContent = a.text;
+    const w = document.createElement('div'); w.className = 'who';
+    const i = document.createElement('i'); i.textContent = (a.name || '?').trim().charAt(0).toUpperCase();
+    const n = document.createElement('span'); n.textContent = a.name;
+    w.append(i, n);
+    const hide = document.createElement('button'); hide.className = 'hide'; hide.type = 'button'; hide.title = 'Hide this card'; hide.textContent = '×';
+    hide.addEventListener('click', async () => { try { await BW.hide(key, a.id); } catch (e) {} refresh(true); });
+    c.append(hide, t, w);
+    if (isNew) setTimeout(() => c.classList.remove('new'), 8000);
+    return c;
+  }
+  // Largest text size at which the idea still fits its card.
+  function fit(c) {
+    const t = c.querySelector('.t');
+    if (!c.clientHeight) return;
+    let fs = Math.round(Math.min(c.clientWidth * 0.12, c.clientHeight * 0.17));
+    t.style.display = ''; t.style.webkitLineClamp = ''; t.style.fontSize = fs + 'px';
+    while (fs > 16 && t.scrollHeight > t.clientHeight) { fs -= 1; t.style.fontSize = fs + 'px'; }
+    // Still too long on a small screen: end on a whole line with an ellipsis.
+    if (t.scrollHeight > t.clientHeight) { const lines = Math.max(1, Math.floor(t.clientHeight / (fs * 1.2))); t.style.display = '-webkit-box'; t.style.webkitBoxOrient = 'vertical'; t.style.webkitLineClamp = lines; }
+  }
+  function bump(id, v) { const el = $(id); if (el.textContent !== String(v)) { el.textContent = v; el.classList.add('bump'); setTimeout(() => el.classList.remove('bump'), 250); } }
+  let first = true, seq = 0;
+  async function refresh(full) {
+    let d; const n = ++seq;
+    try { const w = await BW.wall(KEY); d = { answers: w.answers.map((a) => ({ id: a.id, name: a.name, text: a.text, ts: Date.parse(a.created_at) })), count: w.count, people: w.people }; } catch (e) { return; }
+    if (n !== seq) return; // a later refresh is already in flight
+    const wall = $('wall');
+    // Only the newest cards are on the wall, newest first; the counters still show the whole day.
+    const show = d.answers.slice().sort((a, b) => b.ts - a.ts).slice(0, MAX_CARDS);
+    const ids = new Set(show.map((a) => a.id));
+    for (const [id, el] of seen) if (!ids.has(id)) { el.remove(); seen.delete(id); }
+    // An older idea coming back (because a newer one was hidden or removed) lands below the cards already up, without the NEW tag.
+    const fresh = seen.size === 0; let kept = seen.size;
+    show.forEach((a, i) => {
+      if (seen.has(a.id)) { kept--; return; }
+      const isNew = !first && (fresh || kept > 0);
+      const el = card(a, isNew);
+      wall.insertBefore(el, wall.children[i] || null); seen.set(a.id, el); fit(el);
+      if (isNew) { const sp = $('spark'); sp.classList.remove('pop'); void sp.offsetWidth; sp.classList.add('pop'); }
+    });
+    first = false;
+    bump('count', d.count); bump('people', d.people);
+    $('empty').classList.toggle('gone', d.answers.length > 0);
+  }
+  refresh(); setInterval(refresh, 3000);
+  let refit = 0;
+  window.addEventListener('resize', () => { cancelAnimationFrame(refit); refit = requestAnimationFrame(() => { for (const el of seen.values()) fit(el); }); });
+  if (!BW.configured) { const h = $('empty').querySelector('h2'); h.textContent = 'Not connected to the database yet: fill in config.js and rebuild.'; }
+
+  // Presenter controls
+  async function checkAdmin() {
+    try { admin = key ? (await BW.presenterOk(key)) === true : false; } catch (e) { admin = false; }
+    document.body.classList.toggle('admin', admin);
+    $('btnCsv').style.display = admin ? '' : 'none'; $('btnReset').style.display = admin ? '' : 'none';
+    $('btnKey').style.display = admin ? 'none' : ''; $('who').textContent = admin ? '● presenter' : '';
+  }
+  $('btnCsv').addEventListener('click', async (e) => {
+    e.preventDefault();
+    let rows; try { rows = await BW.exportRows(key, KEY); } catch (e) { return; }
+    const blob = new Blob([BW.csv(rows)], { type: 'text/csv' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'build-wall-' + KEY + '.csv'; a.click();
+  });
+  $('btnKey').addEventListener('click', () => { $('keyModal').classList.add('show'); $('keyInput').focus(); });
+  $('keyCancel').addEventListener('click', () => $('keyModal').classList.remove('show'));
+  async function tryKey() {
+    key = $('keyInput').value.trim(); await checkAdmin();
+    if (admin) { try { sessionStorage.setItem('bw-admin-key', key); } catch {} $('keyModal').classList.remove('show'); }
+    else { key = null; $('keyErr').textContent = 'That key did not work.'; }
+  }
+  $('keyOk').addEventListener('click', tryKey);
+  $('keyInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') tryKey(); });
+  $('btnReset').addEventListener('click', () => { $('resetModal').classList.add('show'); $('resetInput').value = ''; $('resetInput').focus(); });
+  $('resetCancel').addEventListener('click', () => $('resetModal').classList.remove('show'));
+  $('resetOk').addEventListener('click', async () => {
+    if ($('resetInput').value.trim().toLowerCase() !== 'clear') return;
+    try { await BW.reset(key, KEY); } catch (e) {}
+    $('resetModal').classList.remove('show'); refresh();
+  });
+  $('btnFull').addEventListener('click', () => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); });
+  $('qrSmall').addEventListener('click', () => $('qrModal').classList.add('show'));
+  $('qrModal').addEventListener('click', () => $('qrModal').classList.remove('show'));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') document.querySelectorAll('.modal.show').forEach((m) => m.classList.remove('show')); if (e.key === 'q') $('qrModal').classList.toggle('show'); });
+  checkAdmin();
+})();
+</script>
+</body>
+</html>

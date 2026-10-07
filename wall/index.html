@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Build Wall · presenter hub</title>
+<style>
+  :root{--canvas:#F0EEE6;--card:#FAF9F5;--ink:#141413;--muted:#5E5D59;--line:#E3DFD3;--accent:#D97757;--accent-ink:#FAF9F5;--tint-clay:#F5DCCB;--tint-oat:#EAE3D1;--radius:24px;--shadow:0 12px 34px rgba(20,20,19,.09)}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--canvas);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:32px 20px 60px;max-width:1100px;margin:0 auto}
+  .eyebrow{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  h1{font-size:40px;margin:4px 0 6px;letter-spacing:-.02em;font-weight:800}
+  h1 span{color:var(--accent)}
+  .lead{color:var(--muted);margin:0 0 28px;font-size:17px;max-width:720px}
+  .grid{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;display:flex;flex-direction:column;gap:14px}
+  .card .head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .pill{display:inline-block;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:700}
+  .pill.clay{background:var(--tint-clay)} .pill.oat{background:var(--tint-oat)}
+  .card h2{margin:0;font-size:26px;letter-spacing:-.01em}
+  .q{font-weight:700;font-size:17px}
+  .qrrow{display:flex;gap:18px;align-items:center}
+  .qr{background:var(--card);padding:8px;border-radius:16px;border:1px solid #EEE;width:196px;height:196px;display:grid;place-items:center;flex:none}
+  .qr canvas,.qr img{width:180px!important;height:180px!important}
+  .links{display:flex;flex-direction:column;gap:8px;min-width:0}
+  .links a{display:block;font-weight:700;color:var(--ink);text-decoration:none;background:var(--canvas);border-radius:14px;padding:12px 14px;transition:background .15s}
+  .links a:hover{background:var(--tint-clay)}
+  .links a small{display:block;color:var(--muted);font-weight:600;font-size:12px;word-break:break-all;margin-top:2px}
+  .links a.primary{background:var(--accent);color:var(--accent-ink)}
+  .links a.primary small{color:rgba(255,255,255,.8)}
+  .stats{color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+  .notes{margin-top:34px;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:24px}
+  .notes h3{margin:0 0 10px;font-size:18px}
+  .notes ol{margin:0;padding-left:20px;color:var(--muted)}
+  .notes li{margin:6px 0}
+  .notes b{color:var(--ink)}
+  kbd{background:var(--canvas);border-radius:6px;padding:1px 6px;font-family:inherit;font-weight:700}
+  .spark{display:inline-block;width:var(--spark,26px);height:var(--spark,26px);color:var(--accent);vertical-align:middle;transform-origin:50% 50%;animation:spark-in .9s cubic-bezier(.34,1.56,.64,1) both,spark-idle 7s ease-in-out 1.4s infinite}
+  .spark svg{width:100%;height:100%;display:block}
+  .spark.pop{animation:spark-in .9s cubic-bezier(.34,1.56,.64,1) both}
+  @keyframes spark-in{0%{transform:scale(0)}55%{transform:scale(1.18)}75%{transform:scale(.94) rotate(-3deg)}100%{transform:scale(1) rotate(0)}}
+  @keyframes spark-idle{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.06) rotate(2deg)}}
+  .working{--s:22px;display:inline-block;width:var(--s);height:var(--s);background:currentColor;-webkit-mask:url(lib/spark-working.svg) 0 0/var(--s) auto no-repeat;mask:url(lib/spark-working.svg) 0 0/var(--s) auto no-repeat;animation:working .93s steps(28) infinite;vertical-align:-4px;margin-right:8px}
+  @keyframes working{to{-webkit-mask-position:0 calc(var(--s) * -28);mask-position:0 calc(var(--s) * -28)}}
+  .clawd{display:inline-block;width:36px;height:24px;image-rendering:pixelated;animation:clawd-bob 1.6s ease-in-out infinite;vertical-align:middle;margin-left:6px}
+  .clawd svg{width:100%;height:100%;display:block;shape-rendering:crispEdges}
+  @keyframes clawd-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+  @media (prefers-reduced-motion:reduce){.spark,.working,.clawd{animation:none}}
+</style>
+</head>
+<body>
+  <div class="eyebrow">Working with Claude</div>
+  <h1><i class="spark" style="--spark:38px;margin-right:10px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" >
+  
+  <path fill="#d97757" d="M11.376 24L10.776 23.544L10.44 22.8L10.776 21.312L11.16 19.392L11.472 17.856L11.76 15.96L11.928 15.336L11.904 15.288L11.784 15.312L10.344 17.28L8.16 20.232L6.432 22.056L6.024 22.224L5.304 21.864L5.376 21.192L5.784 20.616L8.16 17.568L9.6 15.672L10.536 14.592L10.512 14.448H10.464L4.128 18.576L3 18.72L2.496 18.264L2.568 17.52L2.808 17.28L4.704 15.96L9.432 13.32L9.504 13.08L9.432 12.96H9.192L8.4 12.912L5.712 12.84L3.384 12.744L1.104 12.624L0.528 12.504L0 11.784L0.048 11.424L0.528 11.112L1.224 11.16L2.736 11.28L5.016 11.424L6.672 11.52L9.12 11.784H9.504L9.552 11.616L9.432 11.52L9.336 11.424L6.96 9.84L4.416 8.16L3.072 7.176L2.352 6.672L1.992 6.216L1.848 5.208L2.496 4.488L3.384 4.56L3.6 4.608L4.488 5.304L6.384 6.768L8.88 8.616L9.24 8.904L9.408 8.808V8.736L9.24 8.472L7.896 6.024L6.456 3.528L5.808 2.496L5.64 1.872C5.576 1.656 5.544 1.416 5.544 1.152L6.288 0.144001L6.696 0L7.704 0.144001L8.112 0.504001L8.736 1.92L9.72 4.152L11.28 7.176L11.736 8.088L11.976 8.904L12.072 9.168H12.24V9.024L12.36 7.296L12.6 5.208L12.84 2.52L12.912 1.752L13.296 0.840001L14.04 0.360001L14.616 0.624001L15.096 1.32L15.024 1.752L14.76 3.6L14.184 6.504L13.824 8.472H14.04L14.28 8.208L15.264 6.912L16.92 4.848L17.64 4.032L18.504 3.12L19.056 2.688H20.088L20.832 3.816L20.496 4.992L19.44 6.336L18.552 7.464L17.28 9.168L16.512 10.536L16.584 10.632H16.752L19.608 10.008L21.168 9.744L22.992 9.432L23.832 9.816L23.928 10.2L23.592 11.016L21.624 11.496L19.32 11.952L15.888 12.768L15.84 12.792L15.888 12.864L17.424 13.008L18.096 13.056H19.728L22.752 13.272L23.544 13.8L24 14.424L23.928 14.928L22.704 15.528L21.072 15.144L17.232 14.232L15.936 13.92H15.744V14.016L16.848 15.096L18.84 16.896L21.36 19.224L21.48 19.8L21.168 20.28L20.832 20.232L18.624 18.552L17.76 17.808L15.84 16.2H15.72V16.368L16.152 17.016L18.504 20.544L18.624 21.624L18.456 21.96L17.832 22.176L17.184 22.056L15.792 20.136L14.376 17.952L13.224 16.008L13.104 16.104L12.408 23.352L12.096 23.712L11.376 24Z"/>
+</svg></i>Build <span>Wall</span></h1>
+  <p class="lead">One QR code per session. Attendees scan it, type what they are going to build today, and each idea lands live on the board you project. This page is for the presenters; the two links below are the ones to share.</p>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="notes">
+    <h3>Run of show</h3>
+    <ol>
+      <li>Open the <b>board</b> for the session on the projector laptop and press <kbd>Fullscreen</kbd> (bottom-right, appears on hover). Press <kbd>q</kbd> to show the QR code full-screen.</li>
+      <li>Click <b>Presenter</b> once and enter the admin key: it unlocks hiding a card (hover, ×), <b>Export CSV</b> and <b>Reset wall</b>.</li>
+      <li>Ask the room to scan and answer. Each person can add up to 10 ideas and remove their own from their phone.</li>
+      <li>Before the afternoon session, open the second board: the two sessions have separate walls and separate QR codes.</li>
+    </ol>
+  </div>
+
+<script src="lib/qrcode.min.js"></script>
+<script src="config.js"></script>
+<script src="lib/api.js"></script>
+<script>
+  const SESSIONS = [{"key":"cowork","title":"Cowork","subtitle":"Morning session · 9:30","question":"What are you going to build with Cowork today?","hint":"A brief, a weekly report, a skill for your team… one idea per card.","accent":"clay"},{"key":"code","title":"Claude Code","subtitle":"Afternoon session · 13:00","question":"What are you going to build with Claude Code today?","hint":"A feature, a fix, an agent, a tool for your repo… one idea per card.","accent":"oat"}];
+  const grid = document.getElementById('grid');
+  for (const s of SESSIONS) {
+    const join = new URL('join/' + s.key + '/', location.href).href;
+    const board = new URL('board/' + s.key + '/', location.href).href;
+    const card = document.createElement('div'); card.className = 'card';
+    const head = document.createElement('div'); head.className = 'head';
+    const h2 = document.createElement('h2'); h2.textContent = s.title;
+    const pill = document.createElement('span'); pill.className = 'pill ' + s.accent; pill.textContent = s.subtitle;
+    head.append(h2, pill);
+    const q = document.createElement('div'); q.className = 'q'; q.textContent = s.question;
+    const row = document.createElement('div'); row.className = 'qrrow';
+    const qr = document.createElement('div'); qr.className = 'qr';
+    try { new QRCode(qr, { text: join, width: 180, height: 180, colorDark: '#141413', colorLight: '#FAF9F5', correctLevel: QRCode.CorrectLevel.M }); } catch (e) { qr.textContent = join; }
+    const links = document.createElement('div'); links.className = 'links';
+    const mk = (href, label, sub, cls) => { const a = document.createElement('a'); a.href = href; a.className = cls || ''; a.textContent = label; const sm = document.createElement('small'); sm.textContent = sub; a.appendChild(sm); return a; };
+    links.append(mk(board, 'Open the board (projector)', board, 'primary'), mk(join, 'Attendee page', join.replace(/^https?:\/\//, '')));
+    row.append(qr, links);
+    const stats = document.createElement('div'); stats.className = 'stats'; stats.textContent = '…';
+    card.append(head, q, row, stats); grid.appendChild(card);
+    const upd = async () => { try { const d = await window.BuildWall.stats(s.key); stats.textContent = d.count + ' ideas from ' + d.people + ' people so far'; } catch (e) { stats.textContent = window.BuildWall.configured ? '' : 'Not connected: fill in config.js and rebuild.'; } };
+    upd(); setInterval(upd, 5000);
+  }
+</script>
+</body>
+</html>
