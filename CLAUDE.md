@@ -31,3 +31,7 @@ App serves on http://localhost:8080. Use the `demo` profile in Claude Code on th
 ## Known gaps
 
 - No validation of `from`, `to`, `limit`: a malformed date is a 500 (ticket TODO-232).
+
+## Rules
+
+- pom.xml dependencies are frozen. Any change needs a CHG ticket.
