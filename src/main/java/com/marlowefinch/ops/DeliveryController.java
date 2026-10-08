@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class DeliveryController {
 
-    static final int DEFAULT_LIMIT = 20;
-
     private final DashboardRepository repository;
     private final Clock clock;
 
@@ -29,7 +27,11 @@ public class DeliveryController {
     @GetMapping("/api/deliveries/late")
     public List<LateDelivery> late(@RequestParam(required = false) String from,
                                    @RequestParam(required = false) String to,
-                                   @RequestParam(required = false, defaultValue = "" + DEFAULT_LIMIT) int limit) {
-        return repository.lateDeliveries(DateRange.resolve(from, to, clock), limit);
+                                   @RequestParam(required = false) String limit) {
+        QueryParams params = new QueryParams();
+        DateRange range = params.dateRange(from, to, clock);
+        int rows = params.limit(limit);
+        params.validate();
+        return repository.lateDeliveries(range, rows);
     }
 }
