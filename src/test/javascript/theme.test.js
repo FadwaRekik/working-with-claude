@@ -47,7 +47,13 @@ describe('theme toggle (TODO-231)', () => {
     first.document.getElementById('theme-toggle').click();
     expect(localStorage.getItem(THEME_KEY)).toBe('light');
 
+    // The inline <head> script applies the stored theme before first paint, before app.js runs.
     document.documentElement.removeAttribute('data-theme');
+    const html = fs.readFileSync(path.join(STATIC_DIR, 'index.html'), 'utf8');
+    const headScript = html.match(/<head>[\s\S]*?<script>([\s\S]*?)<\/script>[\s\S]*?<\/head>/)[1];
+    new Function(headScript)();
+    expect(theme(document)).toBe('light');
+
     const second = await loadApp();
     expect(theme(second.document)).toBe('light');
     expect(second.document.getElementById('theme-toggle').textContent).toBe('Dark theme');

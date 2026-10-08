@@ -6,6 +6,7 @@
 
 :root,
 [data-theme="dark"] {
+  color-scheme: dark;
   --bg: #14181f;
   --surface: #1d232c;
   --surface-hover: #262d38;
@@ -32,6 +33,7 @@
 }
 
 [data-theme="light"] {
+  color-scheme: light;
   --bg: #f3f1ec;
   --surface: #ffffff;
   --surface-hover: #f8f6f1;
