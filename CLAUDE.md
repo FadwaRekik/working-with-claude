@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 - Run: `SPRING_PROFILES_ACTIVE=demo ./mvnw spring-boot:run` (H2, no Docker) or `docker compose up -d db && ./mvnw spring-boot:run`; app on :8080.
-- Test: `./mvnw test` (Java, 25) and `npm test` (Jest, 45); one test: `-Dtest=Class#method` or `npx jest <file> -t "<name>"`.
+- Test: `./mvnw test` (Java, 63) and `npm test` (Jest, 48); one test: `-Dtest=Class#method` or `npx jest <file> -t "<name>"`.
 - Backend: Spring Boot 3.2 / Java 17 in `src/main/java/com/marlowefinch/ops/`; controllers -> repositories with plain SQL (Spring JDBC, no JPA), read-only `GET /api/*`.
 - Data: Flyway `V1__schema.sql` + `V2__seed.sql`; tests and `demo` use H2 in PostgreSQL mode.
 - Frontend: vanilla JS/HTML/CSS in `src/main/resources/static/`, no framework or build step; charts are inline SVG.

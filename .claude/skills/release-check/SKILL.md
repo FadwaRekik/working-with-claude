@@ -23,7 +23,7 @@ description: Run before opening a PR. Verifies both test suites against the base
 
 ## Constraints
 
-- Baseline: **Java 25**, **Jest 48** (the count after TODO-231).
+- Baseline: **Java 63** (after TODO-232), **Jest 48** (the count after TODO-231).
 - A count BELOW the baseline is a **FAIL**, even if every test that ran passed.
   Fewer tests means something was deleted or skipped; find out what before
   reporting.
@@ -37,7 +37,7 @@ description: Run before opening a PR. Verifies both test suites against the base
 
 ```
 Release check
-  Java:  <n> run, <f> failures, <e> errors   (baseline 25)  PASS|FAIL
+  Java:  <n> run, <f> failures, <e> errors   (baseline 63)  PASS|FAIL
   Jest:  <n> passed, <t> total               (baseline 48)  PASS|FAIL
   Verdict: READY | NOT READY
   Notes: <one line per problem, or "none">
