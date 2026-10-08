@@ -13,6 +13,9 @@
   var DEFAULT_PRESET_DAYS = 30;
   var LATE_LIMIT = 20;
   var SVG_NS = 'http://www.w3.org/2000/svg';
+  var THEME_KEY = 'ops-dashboard-theme';
+  var DEFAULT_THEME = 'dark';
+  var THEMES = ['light', 'dark'];
 
   // ---------- API client ----------
 
@@ -122,10 +125,12 @@
       chartOnTime: document.getElementById('chart-on-time'),
       chartTickets: document.getElementById('chart-tickets'),
       lateBody: document.getElementById('late-body'),
-      vendors: document.getElementById('vendors-list')
+      vendors: document.getElementById('vendors-list'),
+      themeToggle: document.getElementById('theme-toggle')
     };
 
     var state = {
+      theme: DEFAULT_THEME,
       today: null,
       from: null,
       to: null,
@@ -170,6 +175,39 @@
     function setKpi(el, value) {
       el.querySelector('.kpi-value').textContent = value;
     }
+
+    // ---------- Theme ----------
+
+    /** The stored theme if it is one we know, else the default. The OS setting is ignored. */
+    function readStoredTheme() {
+      try {
+        var stored = document.defaultView.localStorage.getItem(THEME_KEY);
+        return THEMES.indexOf(stored) === -1 ? DEFAULT_THEME : stored;
+      } catch (err) {
+        return DEFAULT_THEME;
+      }
+    }
+
+    function applyTheme(theme, persist) {
+      state.theme = theme;
+      document.documentElement.setAttribute('data-theme', theme);
+      var next = theme === 'dark' ? 'light' : 'dark';
+      els.themeToggle.textContent = next === 'dark' ? 'Dark theme' : 'Light theme';
+      els.themeToggle.setAttribute('aria-label', 'Switch to ' + next + ' theme');
+      if (persist) {
+        try {
+          document.defaultView.localStorage.setItem(THEME_KEY, theme);
+        } catch (err) {
+          // Storage unavailable (private mode, quota): the theme still applies for this page.
+        }
+      }
+    }
+
+    function toggleTheme() {
+      applyTheme(state.theme === 'dark' ? 'light' : 'dark', true);
+    }
+
+    applyTheme(readStoredTheme(), false);
 
     // ---------- Rendering ----------
 
@@ -345,6 +383,8 @@
       });
     });
 
+    els.themeToggle.addEventListener('click', toggleTheme);
+
     var ready = api.health().then(function (health) {
       state.today = health.today;
       var range = applyPreset(DEFAULT_PRESET_DAYS, state.today);
@@ -359,6 +399,7 @@
       state: state,
       load: load,
       selectPreset: selectPreset,
+      toggleTheme: toggleTheme,
       api: api
     };
   }
